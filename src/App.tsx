@@ -1,6 +1,22 @@
-import {FC, useEffect, useState} from 'react'
+import React, {FC, useEffect, useState} from 'react'
 import aituBridge from '@btsd/aitu-bridge'
-import {IonApp, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonList, IonTitle, IonToolbar} from '@ionic/react'
+import {
+	IonApp,
+	IonButton,
+	IonButtons,
+	IonContent,
+	IonFab,
+	IonFabButton,
+	IonHeader,
+	IonIcon,
+	IonInput,
+	IonItem,
+	IonList,
+	IonModal,
+	IonTitle,
+	IonToast,
+	IonToolbar
+} from '@ionic/react'
 
 import './App.css'
 
@@ -32,12 +48,16 @@ export type TTask = {
 }
 
 const App: FC = () => {
-	const [tasks, setTasks] = useState<TTask[]>([])
+	const [tasks, setTasks] = useState<TTask[]>([]),
+		[showModal, setShowModal] = useState(false),
+		[content, setContent] = useState(''),
+		[showToast, setShowToast] = useState(false)
 
 	const getTasks = async () => {
 		try {
-			const data = aituBridge.storage.getItem('tasks')
-			console.log(data)
+			const data = await aituBridge.storage.getItem('tasks'),
+				parsed = JSON.parse(data!) as TTask[]
+			setTasks(parsed)
 		} catch (e) {
 			console.log(e)
 		}
@@ -48,6 +68,22 @@ const App: FC = () => {
 			getTasks().then()
 		}
 	}, [])
+
+	const createTask = async () => {
+		if (!content)
+			setShowToast(true)
+		else if (aituBridge.isSupported()) {
+			const data = await aituBridge.storage.getItem('tasks')
+			let parsed = JSON.parse(data!) as TTask[]
+			const newTask: TTask = {
+				id: parsed.length,
+				content,
+				isCompleted: false
+			}
+			parsed.push(newTask)
+			await aituBridge.storage.setItem('tasks', JSON.stringify(parsed))
+		}
+	}
 
 	return (
 		<IonApp>
@@ -61,10 +97,31 @@ const App: FC = () => {
 					{tasks.map(task => <Task key={task.id} data={task}/>)}
 				</IonList>
 				<IonFab vertical='bottom' horizontal='end' slot='fixed'>
-					<IonFabButton>
+					<IonFabButton onClick={() => setShowModal(true)}>
 						<IonIcon icon={add}/>
 					</IonFabButton>
 				</IonFab>
+				<IonModal isOpen={showModal}>
+					<IonHeader>
+						<IonToolbar>
+							<IonTitle>Create task</IonTitle>
+							<IonButtons slot='end'>
+								<IonButton expand='full' onClick={() => setShowModal(false)}>Close</IonButton>
+							</IonButtons>
+						</IonToolbar>
+					</IonHeader>
+					<IonItem>
+						<IonInput value={content} placeholder='Enter task' autofocus
+								  onIonChange={e => setContent(e.detail.value!)}/>
+					</IonItem>
+					<IonButton expand='full' onClick={createTask}>Create</IonButton>
+				</IonModal>
+				<IonToast position='top' isOpen={showToast} duration={1000}
+						  onDidDismiss={() => setShowToast(false)} message='Enter some content.'
+				/>
+				<pre>
+					{JSON.stringify(tasks, null, 2)}
+				</pre>
 			</IonContent>
 		</IonApp>
 	)
