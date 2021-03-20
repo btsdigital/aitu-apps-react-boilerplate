@@ -133,17 +133,7 @@ const App: React.FC = () => {
                 imgSrc={"/assets/slide3.png"}
             ></SlideContent>
           </IonSlide>
-          <IonSlide>
-            <SlideContent
-                title={"Баннер с ваши предложением"}
-                onClick={handleButtonClick}
-                description={
-                  "         Уникальная скидка, спецпредложение или акция. Донесите ценное предложение до всех пользователей Aitu"
-                }
-                buttonTitle={"Далее"}
-                imgSrc={"/assets/slide4.png"}
-            ></SlideContent>
-          </IonSlide>
+
         </IonSlides>
       </IonContent>
     </IonApp>
