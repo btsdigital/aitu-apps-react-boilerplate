@@ -1,13 +1,15 @@
 import React, {FC} from 'react'
 import {IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel} from '@ionic/react'
 import {TTask} from '../App'
-import {checkmarkOutline, trashOutline} from 'ionicons/icons'
+import {checkmarkOutline, closeOutline, trashOutline} from 'ionicons/icons'
 
 type Props = {
-	data: TTask
+	data: TTask,
+	updateTask: (id: number, completed: boolean) => void
+	deleteTask: (id: number) => void
 }
 
-export const Task: FC<Props> = ({data}) => {
+export const Task: FC<Props> = ({data, updateTask, deleteTask}) => {
 	return (
 		<IonItemSliding>
 			<IonItem>
@@ -16,15 +18,23 @@ export const Task: FC<Props> = ({data}) => {
 				</IonLabel>
 			</IonItem>
 			<IonItemOptions side='end'>
-				<IonItemOption className='task-delete-option' slot='icon-only' onClick={() => {
-					console.log(`delete ${data.id}`)
+				<IonItemOption color='danger' className='task-delete-option' slot='icon-only' onClick={() => {
+					deleteTask(data.id)
 				}}>
 					<IonIcon icon={trashOutline}/>
 				</IonItemOption>
-				<IonItemOption className='task-complete-option' slot='icon-only' onClick={() => {
-					console.log(`complete ${data.id}`)
+				<IonItemOption color={!data.isCompleted ? 'success' : 'warning'} className='task-complete-option'
+							   slot='icon-only' onClick={() => {
+					if (!data.isCompleted)
+						updateTask(data.id, true)
+					else
+						updateTask(data.id, false)
 				}}>
-					<IonIcon icon={checkmarkOutline}/>
+					{!data.isCompleted ? (
+						<IonIcon icon={checkmarkOutline}/>
+					) : (
+						<IonIcon icon={closeOutline}/>
+					)}
 				</IonItemOption>
 			</IonItemOptions>
 		</IonItemSliding>
